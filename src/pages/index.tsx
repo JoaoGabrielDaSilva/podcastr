@@ -16,6 +16,8 @@ import {
   Members,
   Button,
 } from "../styles/home";
+import { useContext } from "react";
+import { PlayerContext } from "../contexts/PlayerContext";
 
 interface Episode {
   id: string;
@@ -33,12 +35,20 @@ interface HomeProps {
   allEpisodes: Episode[];
 }
 const Home: React.FC<HomeProps> = ({ latestEpisodes, allEpisodes }) => {
+
+  const {playList} = useContext(PlayerContext)
+
+  const episodeList = [...latestEpisodes, ...allEpisodes];
+
   return (
     <Homepage>
       <LatestEpisodes>
         <Title>Últimos episódios</Title>
+
+
+
         <EpisodesList>
-          {latestEpisodes.map(episode => {
+          {latestEpisodes.map((episode, index) => {
             return (
               <Episode key={episode.id}>
                 <Image
@@ -57,7 +67,7 @@ const Home: React.FC<HomeProps> = ({ latestEpisodes, allEpisodes }) => {
                   <span>{episode.durationAsString}</span>
                 </Details>
 
-                <Button>
+                <Button onClick={() => playList(episodeList, index)}>
                   <img src="/play-green.svg" alt="Tocar episódio" />
                 </Button>
               </Episode>
@@ -79,7 +89,7 @@ const Home: React.FC<HomeProps> = ({ latestEpisodes, allEpisodes }) => {
             </tr>
           </thead>
           <tbody>
-            {allEpisodes.map(episode => {
+            {allEpisodes.map((episode, index) => {
               return (
                 <tr key={episode.id}>
                   <td style={{ width: 72 }}>
@@ -100,7 +110,7 @@ const Home: React.FC<HomeProps> = ({ latestEpisodes, allEpisodes }) => {
                   <td style={{ width: 100 }}>{episode.publishedAt}</td>
                   <td>{episode.durationAsString}</td>
                   <td>
-                    <Button>
+                    <Button onClick={() => playList(episodeList, index + latestEpisodes.length)}>
                       <img src="/play-green.svg" alt="Tocar episódio" />
                     </Button>
                   </td>

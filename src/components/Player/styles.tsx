@@ -1,5 +1,7 @@
 import styled from "styled-components";
 
+
+
 export const Container = styled.div`
   width: 26.5rem;
   height: 100vh;
@@ -21,14 +23,36 @@ export const Header = styled.div`
   gap: 1rem;
 `;
 
-export const Image = styled.img``;
+export const StyledImage = styled.img``;
 
 export const Strong = styled.strong`
   font-family: Lexend, sans-serif;
   font-weight: 600;
 `;
 
-export const Body = styled.div`
+export const CurrentEpisode = styled.div`
+  text-align: center;
+
+  img {
+    border-radius: 1.5rem;
+  }
+
+  strong {
+    display: block;
+    margin-top: 2rem;
+    font: 600 1.25rem Lexend, sans-serif;
+    line-height: 1.75rem;
+  }
+
+  span {
+    display: block;
+    margin-top: 1rem;
+    opacity: 0.6;
+    line-height: 1.5rem;
+  }
+`;
+
+export const EmptyPlayer = styled.div`
   width: 100%;
   height: 20rem;
   border: 1.5px dashed var(--purple-300);
@@ -47,16 +71,18 @@ export const Body = styled.div`
   justify-content: center;
 `;
 
-export const Footer = styled.div<{ empty: boolean }>`
+export const Footer = styled.div`
   align-self: stretch;
-  opacity: ${({ empty }) => (empty ? 0.5 : 1)};
 `;
 
-export const ProgressBar = styled.div`
+export const ProgressBar = styled.div<{ empty: boolean }>`
   display: flex;
   align-items: center;
   gap: 1rem;
   font-size: 0.875rem;
+
+  opacity: ${({ empty }) => (empty ? 0.5 : 1)};
+
 `;
 
 export const CurrentProgress = styled.span`
@@ -65,7 +91,7 @@ export const CurrentProgress = styled.span`
   text-align: center;
 `;
 
-export const Slider = styled.div`
+export const SliderWrapper = styled.div`
   flex: 1;
 `;
 
@@ -82,12 +108,20 @@ export const ButtonsWrapper = styled.div`
   justify-content: center;
   margin-top: 2.5rem;
   gap: 1.5rem;
+  transition: filter 0.2s;
 `;
 
 export const Button = styled.button`
   background: transparent;
   border: 0;
   font-size: 0;
+
+  cursor: ${({disabled}) => disabled ? 'not-allowed' : 'pointer'};
+  opacity: ${({disabled}) => disabled ? 0.5 : 1};
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.7);
+  }
 `;
 
 export const PlayButton = styled.button`
@@ -95,4 +129,10 @@ export const PlayButton = styled.button`
   height: 4rem;
   border-radius: 1rem;
   background: var(--purple-400);
+
+  cursor: ${({disabled}) => disabled ? 'not-allowed' : 'pointer'};
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.95);
+  }
 `;

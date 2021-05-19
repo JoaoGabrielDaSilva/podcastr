@@ -14,6 +14,7 @@ import {
   Description,
 } from "../../styles/episode";
 
+
 interface EpisodeType {
   id: string;
   title: string;
@@ -31,6 +32,8 @@ interface EpisodeProps {
 }
 
 const Episode: React.FC<EpisodeProps> = ({ episode }) => {
+
+
   return (
     <Container>
       <ThumbnailContainer>
@@ -65,8 +68,25 @@ const Episode: React.FC<EpisodeProps> = ({ episode }) => {
 export default Episode;
 
 export const getStaticPaths: GetStaticPaths = async () => {
+
+  const {data} = await api.get('episodes', {
+    params: {
+      _limit: 2,
+      _sort: 'published_at',
+      _order: 'desc'
+    }
+  })
+
+  const paths = data.map(episode => {
+    return {
+      params: {
+        slug: episode.id
+      }
+    }
+  })
+
   return {
-    paths: [],
+    paths,
     fallback: "blocking",
   };
 };

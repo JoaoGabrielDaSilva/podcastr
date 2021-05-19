@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useContext, useEffect, useRef } from "react";
+import Image from 'next/image'
+import { PlayerContext } from "../../contexts/PlayerContext";
+import Slider from 'rc-slider'
+import 'rc-slider/assets/index.css';
 
 import {
   Container,
   Header,
-  Image,
+  StyledImage,
   Strong,
-  Body,
+  EmptyPlayer,
   Footer,
   ProgressBar,
   CurrentProgress,
@@ -13,42 +17,108 @@ import {
   ButtonsWrapper,
   Button,
   PlayButton,
-  Slider,
+  SliderWrapper,
+  CurrentEpisode
 } from "./styles";
 
 const Player: React.FC = () => {
+  const audioRef = useRef<HTMLAudioElement>(null)
+
+  const {
+    episodeList, 
+    currentEpisodeIndex,  
+    isPlaying, 
+    togglePlay,
+    setPlayingState,
+    playNext,
+    playPrevious,
+    hasNext, 
+    hasPrevious
+  } = useContext(PlayerContext)
+
+  const episode = episodeList[currentEpisodeIndex];
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      return
+    } 
+
+    if (isPlaying) {
+      audioRef.current.play()
+    }
+
+    if (!isPlaying) {
+      audioRef.current.pause()
+    }
+
+  }, [isPlaying])
+
   return (
     <Container>
       <Header>
-        <Image src="/playing.svg" alt="Tocando agora" />
+        <StyledImage src="/playing.svg" alt="Tocando agora" />
         <Strong>Tocando agora</Strong>
       </Header>
-      <Body>
-        <Strong>Selecione um podcast para ouvir</Strong>
-      </Body>
-      <Footer empty={true}>
-        <ProgressBar>
+
+      { episode ? (
+        <CurrentEpisode>
+          <Image width={592} height={592} src={episode.thumbnail} objectFit="cover"/>
+          <strong>{episode.title}</strong>
+          <span>{episode.members}</span>
+        </CurrentEpisode>
+      ) : (
+        <EmptyPlayer>
+          <Strong>Selecione um podcast para ouvir</Strong>
+      </EmptyPlayer>
+      ) }
+
+      
+      <Footer>
+        <ProgressBar empty={!episode}>
           <CurrentProgress>00:00</CurrentProgress>
-          <Slider>
+          <SliderWrapper>
+            {episode ? (
+              <Slider 
+                trackStyle={{backgroundColor: "#04d361"}}
+                railStyle={{backgroundColor: "#9f75ff"}}
+                handleStyle={{borderColor: "#04d361", borderWidth: 4}}
+              />
+            ) : (
             <EmptySlider />
-          </Slider>
+            )}
+          </SliderWrapper>
           <CurrentProgress>00:00</CurrentProgress>
         </ProgressBar>
+
+        {episode && (
+          <audio 
+            ref={audioRef}
+            src={episode.url}
+            autoPlay
+            onPlay={() => setPlayingState(true)}
+            onPause={() => setPlayingState(false)}
+          />
+        )}
+
         <ButtonsWrapper>
-          <Button>
-            <Image src="/shuffle.svg" alt="Embaralhar" />
+          <Button disabled={!episode}>
+            <StyledImage src="/shuffle.svg" alt="Embaralhar" />
           </Button>
-          <Button>
-            <Image src="/play-previous.svg" alt="Tocar Anterior" />
+          <Button disabled={!episode || !hasPrevious}>
+            <StyledImage src="/play-previous.svg" alt="Tocar Anterior" onClick={playPrevious}/>
           </Button>
-          <PlayButton>
-            <Image src="/play.svg" alt="Tocar" />
+          <PlayButton disabled={!episode} onClick={togglePlay}>
+            {isPlaying ? (
+              <StyledImage src="/pause.svg" alt="Tocar" />
+              ) : (
+              <StyledImage src="/play.svg" alt="Tocar" />
+            )}
           </PlayButton>
-          <Button>
-            <Image src="/play-next.svg" alt="Tocar Proxima" />
+          <Button disabled={!episode || !hasNext} onClick={playNext}> 
+            <StyledImage src="/play-next.svg" alt="Tocar Proxima" />
           </Button>
-          <Button>
-            <Image src="/repeat.svg" alt="Repetir" />
+          <Button disabled={!episode}>
+            <StyledImage src="/repeat.svg" alt="Repetir" />
           </Button>
         </ButtonsWrapper>
       </Footer>
