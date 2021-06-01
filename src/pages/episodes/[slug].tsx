@@ -2,6 +2,7 @@ import { ptBR } from "date-fns/locale";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
+import Head from "next/head";
 import Link from "next/link";
 import { api } from "../../services/api";
 import { convertDurationToTimeString } from "../../utils/convertDurationToTimeString";
@@ -13,6 +14,7 @@ import {
   Title,
   Description,
 } from "../../styles/episode";
+import { usePlayer } from "../../contexts/PlayerContext";
 
 
 interface EpisodeType {
@@ -33,9 +35,13 @@ interface EpisodeProps {
 
 const Episode: React.FC<EpisodeProps> = ({ episode }) => {
 
+  const { play } = usePlayer()
 
   return (
     <Container>
+      <Head>
+        <title>{episode.title}</title>
+      </Head>
       <ThumbnailContainer>
         <Link href="/">
           <Button type="button">
@@ -50,7 +56,7 @@ const Episode: React.FC<EpisodeProps> = ({ episode }) => {
           objectFit="cover"
         />
         <Button>
-          <img src="/play.svg" alt="Tocar episódio" />
+          <img src="/play.svg" alt="Tocar episódio" onClick={() => play(episode)}/>
         </Button>
       </ThumbnailContainer>
       <Header>

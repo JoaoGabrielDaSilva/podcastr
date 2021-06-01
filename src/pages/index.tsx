@@ -1,5 +1,6 @@
 import { GetStaticProps } from "next";
 import Image from "next/image";
+import Head from "next/head";
 import Link from "next/link";
 import { parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -16,8 +17,7 @@ import {
   Members,
   Button,
 } from "../styles/home";
-import { useContext } from "react";
-import { PlayerContext } from "../contexts/PlayerContext";
+import { usePlayer } from "../contexts/PlayerContext";
 
 interface Episode {
   id: string;
@@ -36,17 +36,17 @@ interface HomeProps {
 }
 const Home: React.FC<HomeProps> = ({ latestEpisodes, allEpisodes }) => {
 
-  const {playList} = useContext(PlayerContext)
+  const {playList} = usePlayer();
 
   const episodeList = [...latestEpisodes, ...allEpisodes];
 
   return (
     <Homepage>
+      <Head>
+        <title>Home | Podcastr</title>
+      </Head>
       <LatestEpisodes>
         <Title>Últimos episódios</Title>
-
-
-
         <EpisodesList>
           {latestEpisodes.map((episode, index) => {
             return (

@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from 'next/image'
-import { PlayerContext } from "../../contexts/PlayerContext";
+import { usePlayer } from "../../contexts/PlayerContext";
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css';
 
@@ -20,6 +20,7 @@ import {
   SliderWrapper,
   CurrentEpisode
 } from "./styles";
+import { convertDurationToTimeString } from "../../utils/convertDurationToTimeString";
 
 const Player: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -28,15 +29,43 @@ const Player: React.FC = () => {
     episodeList, 
     currentEpisodeIndex,  
     isPlaying, 
+    isShuffling,
     togglePlay,
+    toggleLoop,
+    toggleShuffle,
     setPlayingState,
     playNext,
     playPrevious,
+    clearPlayerState,
     hasNext, 
-    hasPrevious
-  } = useContext(PlayerContext)
+    hasPrevious,
+    isLooping
+  } = usePlayer()
 
   const episode = episodeList[currentEpisodeIndex];
+  const [progress, setProgress] = useState(0);
+
+  function setupProgressListener () {
+    audioRef.current.currentTime = 0;
+
+    audioRef.current.addEventListener('timeupdate', () => {
+      setProgress(Math.floor(audioRef.current.currentTime))
+    })
+  }
+
+  function handleSeek(amount: number) {
+    audioRef.current.currentTime = amount;
+    setProgress(amount)
+  }
+
+  function handleEpisodeEnded() {
+    if (hasNext) {
+      playNext()
+    } else {
+      clearPlayerState()
+    }
+  }
+
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -45,9 +74,7 @@ const Player: React.FC = () => {
 
     if (isPlaying) {
       audioRef.current.play()
-    }
-
-    if (!isPlaying) {
+    } else {
       audioRef.current.pause()
     }
 
@@ -75,19 +102,22 @@ const Player: React.FC = () => {
       
       <Footer>
         <ProgressBar empty={!episode}>
-          <CurrentProgress>00:00</CurrentProgress>
+          <CurrentProgress>{convertDurationToTimeString(progress)}</CurrentProgress>
           <SliderWrapper>
             {episode ? (
               <Slider 
                 trackStyle={{backgroundColor: "#04d361"}}
                 railStyle={{backgroundColor: "#9f75ff"}}
                 handleStyle={{borderColor: "#04d361", borderWidth: 4}}
+                max={episode.duration}
+                value={progress}
+                onChange={handleSeek}
               />
             ) : (
             <EmptySlider />
             )}
           </SliderWrapper>
-          <CurrentProgress>00:00</CurrentProgress>
+          <CurrentProgress>{convertDurationToTimeString(episode?.duration ?? 0)}</CurrentProgress>
         </ProgressBar>
 
         {episode && (
@@ -97,11 +127,14 @@ const Player: React.FC = () => {
             autoPlay
             onPlay={() => setPlayingState(true)}
             onPause={() => setPlayingState(false)}
+            onEnded={handleEpisodeEnded}
+            loop={isLooping}
+            onLoadedMetadata={setupProgressListener}
           />
         )}
 
         <ButtonsWrapper>
-          <Button disabled={!episode}>
+          <Button disabled={!episode || episodeList.length === 1} onClick={toggleShuffle} className={isShuffling ? "isActive" : ''}>
             <StyledImage src="/shuffle.svg" alt="Embaralhar" />
           </Button>
           <Button disabled={!episode || !hasPrevious}>
@@ -117,8 +150,8 @@ const Player: React.FC = () => {
           <Button disabled={!episode || !hasNext} onClick={playNext}> 
             <StyledImage src="/play-next.svg" alt="Tocar Proxima" />
           </Button>
-          <Button disabled={!episode}>
-            <StyledImage src="/repeat.svg" alt="Repetir" />
+          <Button disabled={!episode} onClick={toggleLoop} className={isLooping ? 'isActive' : ''}>
+            <StyledImage src="/repeat.svg" alt="Repetir"/>
           </Button>
         </ButtonsWrapper>
       </Footer>
